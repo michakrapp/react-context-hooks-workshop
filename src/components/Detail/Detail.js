@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import styled from 'styled-components';
 import SubHeader from '../Header/SubHeader';
 import HotelItem from '../Hotels/HotelItem';
 import ReviewItem from "./ReviewItem";
+import {HotelContext} from "../../context/HotelsContext";
 
 const ReviewsWrapper = styled.div`
   display: flex;
@@ -17,33 +18,24 @@ const Alert = styled.span`
 `;
 
 const Detail = ({ match, history }) => {
-  // Get this information from the API
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const [hotel, setHotel] = useState(false);
-    const [reviews, setReviews] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const {hotels, loading, error, loadHotels} = useContext(HotelContext);
 
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const hotelId = match.params.id;
-                const data = await fetch(`https://my-json-server.typicode.com/royderks/react-context-hooks-workshop/hotels/${hotelId}`)
-                    .then(response => response.json());
-
-                if (data) {
-                    setLoading(false);
-                    setHotel(data);
+        if (!hotels.length) {
+            loadHotels();
+        } else {
+            if (!hotel) {
+                const theHotel = hotels.find((value) => value.id.toString() === match.params.id);
+                if (theHotel) {
+                    setHotel(theHotel);
+                } else {
+                    console.error(`no hotel found with id ${match.params.id}`);
                 }
             }
-            catch (e) {
-                setError(e);
-            }
-
-            setLoading(false);
-        };
-
-        loadData();
-    }, [match.params.id]);
+        }
+    }, [match, hotels, loadHotels]);
 
     useEffect(() => {
         const loadHotelReview = async (hotelId) => {
@@ -52,15 +44,15 @@ const Detail = ({ match, history }) => {
                     .then(response => response.json());
 
                 if (data) {
-                    setLoading(false);
+                    //setLoading(false);
                     setReviews(data);
                 }
             }
             catch (e) {
-                setError(e);
+                //setError(e);
             }
 
-            setLoading(false);
+            //setLoading(false);
         };
 
         if (hotel) {
@@ -82,7 +74,7 @@ const Detail = ({ match, history }) => {
       <h3>Reviews:</h3>
       <ReviewsWrapper>
           {reviews &&
-            reviews.map(review => <ReviewItem data={review} />)
+            reviews.map(review => <ReviewItem key={review.id} data={review} />)
           }
       </ReviewsWrapper>
     </>

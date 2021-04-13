@@ -1,8 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import SubHeader from '../Header/SubHeader';
 import HotelItem from './HotelItem';
+import {HotelContext} from "../../context/HotelsContext";
 
 const HotelItemsWrapper = styled.div`
   display: flex;
@@ -22,31 +23,13 @@ const Alert = styled.span`
 `;
 
 const Hotels = ({ history }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [hotels, setHotels] = useState([]);
+  const {hotels, loading, error, loadHotels} = useContext(HotelContext);
 
     useEffect(() => {
-        const loadData = async () => {
-          try {
-              const data = await fetch('https://my-json-server.typicode.com/royderks/react-context-hooks-workshop/hotels').then(response => response.json());
-
-              if (data) {
-                  setLoading(false);
-                  setHotels(data);
-              }
-          }
-          catch (e) {
-              setError(e);
-          }
-
-          setLoading(false);
-        };
-
         if (!hotels.length) {
-            loadData();
+            loadHotels();
         }
-  }, [hotels.length]);
+    }, [hotels, loadHotels]);
 
   return !loading && !error ? (
     <>
