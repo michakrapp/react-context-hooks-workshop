@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import SubHeader from '../Header/SubHeader';
 import HotelItem from '../Hotels/HotelItem';
+import ReviewItem from "./ReviewItem";
 
 const ReviewsWrapper = styled.div`
   display: flex;
@@ -20,6 +21,7 @@ const Detail = ({ match, history }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [hotel, setHotel] = useState(false);
+    const [reviews, setReviews] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -40,8 +42,29 @@ const Detail = ({ match, history }) => {
             setLoading(false);
         };
 
-        if (!hotel && match.params.id) {
-            loadData();
+        loadData();
+    }, [match.params.id]);
+
+    useEffect(() => {
+        const loadHotelReview = async (hotelId) => {
+            try {
+                const data = await fetch(`https://my-json-server.typicode.com/royderks/react-context-hooks-workshop/reviews?hotelId=${hotelId}`)
+                    .then(response => response.json());
+
+                if (data) {
+                    setLoading(false);
+                    setReviews(data);
+                }
+            }
+            catch (e) {
+                setError(e);
+            }
+
+            setLoading(false);
+        };
+
+        if (hotel) {
+            loadHotelReview(hotel.id);
         }
     }, [hotel]);
 
@@ -57,7 +80,11 @@ const Detail = ({ match, history }) => {
       <HotelItem data={hotel} />
 
       <h3>Reviews:</h3>
-      <ReviewsWrapper></ReviewsWrapper>
+      <ReviewsWrapper>
+          {reviews &&
+            reviews.map(review => <ReviewItem data={review} />)
+          }
+      </ReviewsWrapper>
     </>
   ) : (
     <Alert>{loading ? 'Loading...' : error}</Alert>
